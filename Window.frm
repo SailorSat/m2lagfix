@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin VB.Form Window 
    BackColor       =   &H00000080&
-   BorderStyle     =   4  'Festes Werkzeugfenster
+   BorderStyle     =   4  'Fixed ToolWindow
    Caption         =   "m2lagfix"
    ClientHeight    =   120
    ClientLeft      =   45
@@ -71,6 +71,8 @@ Private Sub Form_Load()
   Dim Host As String
   Dim Port As Long
   
+  Dim Retry As Byte
+  
   ' Local-RX (m2lagfix)
   Host = ReadIni("m2lagfix.ini", "m2rx", "LocalHost", "127.0.0.1")
   Port = CLng(ReadIni("m2lagfix.ini", "m2rx", "LocalPort", "8000"))
@@ -111,7 +113,13 @@ Private Sub Form_Load()
     Form_Unload 0
   End If
   
+  Retry = 10
   UDP_Socket_RX = Winsock.ListenUDP(UDP_LocalAddress_RX)
+  While UDP_Socket_RX = -1 And Retry > 0
+    Sleep 1000
+    Retry = Retry - 1
+    UDP_Socket_RX = Winsock.ListenUDP(UDP_LocalAddress_RX)
+  Wend
   If UDP_Socket_RX = -1 Then
     MsgBox "Something went wrong! #SOCK_RX", vbCritical Or vbOKOnly, "m2lagfix"
     Form_Unload 0
